@@ -14976,7 +14976,7 @@ Color   -0.036169 -0.028960 -0.033957 -0.032967 -0.039934  0.000622  1.000000
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">findBestFeatues</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target_feature</span><span class="p">,</span> <span class="n">collinear_threshold</span><span class="o">=</span><span class="mf">0.80</span><span class="p">,</span> <span class="n">corr_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">findBestFeatues</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target_feature</span><span class="p">,</span> <span class="n">collinear_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">corr_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Input parameter:</span>
 <span class="sd">    data : DataFrame : Data on which want to perform feature selection</span>
@@ -15011,7 +15011,42 @@ Color   -0.036169 -0.028960 -0.033957 -0.032967 -0.039934  0.000622  1.000000
         <span class="k">if</span> <span class="n">feature</span> <span class="o">!=</span> <span class="n">target_feature</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">feature</span><span class="p">][</span><span class="n">target_feature</span><span class="p">];</span>
             
-            
+     
+    <span class="c1"># Remove all features those having more than threshold collinearity</span>
+    <span class="k">if</span> <span class="n">collinear_threshold</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size_feature</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">dropFeature</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="c1"># Want to keep unique values</span>
+            <span class="n">feature1</span> <span class="o">=</span> <span class="n">available_features</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">feature1_removed</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># check whether feture is getting removed or not</span>
+
+            <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">size_feature</span><span class="p">:</span>
+                <span class="n">feature2</span> <span class="o">=</span> <span class="n">available_features</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">corr_obj</span><span class="p">[</span><span class="n">feature1</span><span class="p">][</span><span class="n">feature2</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">collinear_threshold</span><span class="p">:</span>
+                    <span class="n">corr_of_features</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">corr_obj</span><span class="p">[</span><span class="n">feature1</span><span class="p">][</span><span class="n">feature2</span><span class="p">]);</span>
+                    <span class="n">corr_feature1_with_target</span> <span class="o">=</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">feature1</span><span class="p">]</span>
+                    <span class="n">corr_feature2_with_target</span> <span class="o">=</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">feature2</span><span class="p">]</span>
+
+                    <span class="k">if</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">feature1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">feature2</span><span class="p">]:</span>
+                        <span class="n">dropFeature</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">feature2</span><span class="p">);</span>
+                        <span class="n">reduced_features</span><span class="p">[</span><span class="n">feature2</span><span class="p">]</span> <span class="o">=</span> <span class="n">explaination_collinear</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature1</span><span class="p">,</span> <span class="n">feature2</span><span class="p">,</span> <span class="n">corr_of_features</span><span class="p">,</span> <span class="n">collinear_threshold</span><span class="p">,</span> <span class="n">target_feature</span><span class="p">,</span> <span class="n">corr_feature1_with_target</span><span class="p">,</span> <span class="n">corr_feature2_with_target</span><span class="p">);</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">dropFeature</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">feature1</span><span class="p">);</span>
+                        <span class="n">reduced_features</span><span class="p">[</span><span class="n">feature1</span><span class="p">]</span> <span class="o">=</span> <span class="n">explaination_collinear</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature2</span><span class="p">,</span> <span class="n">feature1</span><span class="p">,</span> <span class="n">corr_of_features</span><span class="p">,</span> <span class="n">collinear_threshold</span><span class="p">,</span> <span class="n">target_feature</span><span class="p">,</span> <span class="n">corr_feature2_with_target</span><span class="p">,</span> <span class="n">corr_feature1_with_target</span><span class="p">);</span>
+                        <span class="n">feature1_removed</span> <span class="o">=</span> <span class="kc">True</span><span class="p">;</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+            <span class="k">for</span> <span class="n">feature1</span>  <span class="ow">in</span> <span class="n">dropFeature</span><span class="p">:</span>
+                <span class="n">size_feature</span> <span class="o">=</span> <span class="n">size_feature</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">available_features</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">feature1</span><span class="p">);</span>
+                <span class="k">del</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">feature1</span><span class="p">];</span>
+                <span class="k">for</span> <span class="n">feature2</span> <span class="ow">in</span> <span class="n">corr_obj</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">del</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">feature2</span><span class="p">][</span><span class="n">feature1</span><span class="p">];</span>
+
+            <span class="k">if</span> <span class="n">feature1_removed</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+     
     <span class="c1"># Remove all features those having less correlation with target variable than correlation threshold</span>
     <span class="k">if</span> <span class="n">corr_threshold</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -15025,39 +15060,7 @@ Color   -0.036169 -0.028960 -0.033957 -0.032967 -0.039934  0.000622  1.000000
             <span class="n">available_features</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">feature</span><span class="p">);</span>
             <span class="n">size_feature</span> <span class="o">=</span> <span class="n">size_feature</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
             
-    <span class="c1"># Remove all features those having more than threshold collinearity</span>
-    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">size_feature</span><span class="p">:</span>
-        <span class="n">j</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">dropFeature</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="c1"># Want to keep unique values</span>
-        <span class="n">feature1</span> <span class="o">=</span> <span class="n">available_features</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">feature1_removed</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># check whether feture is getting removed or not</span>
-        
-        <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">size_feature</span><span class="p">:</span>
-            <span class="n">feature2</span> <span class="o">=</span> <span class="n">available_features</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">corr_obj</span><span class="p">[</span><span class="n">feature1</span><span class="p">][</span><span class="n">feature2</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">collinear_threshold</span><span class="p">:</span>
-                <span class="n">corr_of_features</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">corr_obj</span><span class="p">[</span><span class="n">feature1</span><span class="p">][</span><span class="n">feature2</span><span class="p">]);</span>
-                <span class="n">corr_feature1_with_target</span> <span class="o">=</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">feature1</span><span class="p">]</span>
-                <span class="n">corr_feature2_with_target</span> <span class="o">=</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">feature2</span><span class="p">]</span>
-                                
-                <span class="k">if</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">feature1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">][</span><span class="n">feature2</span><span class="p">]:</span>
-                    <span class="n">dropFeature</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">feature2</span><span class="p">);</span>
-                    <span class="n">reduced_features</span><span class="p">[</span><span class="n">feature2</span><span class="p">]</span> <span class="o">=</span> <span class="n">explaination_collinear</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature1</span><span class="p">,</span> <span class="n">feature2</span><span class="p">,</span> <span class="n">corr_of_features</span><span class="p">,</span> <span class="n">collinear_threshold</span><span class="p">,</span> <span class="n">target_feature</span><span class="p">,</span> <span class="n">corr_feature1_with_target</span><span class="p">,</span> <span class="n">corr_feature2_with_target</span><span class="p">);</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">dropFeature</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">feature1</span><span class="p">);</span>
-                    <span class="n">reduced_features</span><span class="p">[</span><span class="n">feature1</span><span class="p">]</span> <span class="o">=</span> <span class="n">explaination_collinear</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature2</span><span class="p">,</span> <span class="n">feature1</span><span class="p">,</span> <span class="n">corr_of_features</span><span class="p">,</span> <span class="n">collinear_threshold</span><span class="p">,</span> <span class="n">target_feature</span><span class="p">,</span> <span class="n">corr_feature2_with_target</span><span class="p">,</span> <span class="n">corr_feature1_with_target</span><span class="p">);</span>
-                    <span class="n">feature1_removed</span> <span class="o">=</span> <span class="kc">True</span><span class="p">;</span>
-            <span class="n">j</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
-        
-        <span class="k">for</span> <span class="n">feature1</span>  <span class="ow">in</span> <span class="n">dropFeature</span><span class="p">:</span>
-            <span class="n">available_features</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">feature1</span><span class="p">);</span>
-            <span class="k">del</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">feature1</span><span class="p">];</span>
-            <span class="k">for</span> <span class="n">feature2</span> <span class="ow">in</span> <span class="n">corr_obj</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="k">del</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">feature2</span><span class="p">][</span><span class="n">feature1</span><span class="p">];</span>
-        
-        <span class="k">if</span> <span class="n">feature1_removed</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">size_feature</span> <span class="o">=</span> <span class="n">size_feature</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+    
     <span class="n">corr_with_target</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     
     <span class="k">for</span> <span class="n">feature1</span><span class="p">,</span> <span class="n">corr1</span> <span class="ow">in</span> <span class="n">corr_obj</span><span class="p">[</span><span class="n">target_feature</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
